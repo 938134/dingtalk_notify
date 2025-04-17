@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "DingTalk Robot Configuration",
+        "description": "Please enter the Token and Secret of your DingTalk robot",
+        "data": {
+          "token": "Token",
+          "secret": "Secret (optional)"
+        }
+      }
+    },
+    "error": {
+      "invalid_token": "Invalid Token",
+      "unknown": "Unknown error"
+    },
+    "abort": {
+      "already_configured": "This configuration already exists"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configuration Options",
+        "data": {
+          "token": "Token",
+          "secret": "Secret (optional)"
+        }
+      }
+    }
+  },
+  "title": "DingTalk Notify"
+}

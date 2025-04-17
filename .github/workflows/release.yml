@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    branches: ["main"]  # 在主分支上触发
+  workflow_dispatch:    # 也可以手动触发
+
+permissions:
+  contents: write  # 确保有写入权限
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate Version Number
+        id: version
+        run: |
+          # 如果没有版本文件，则初始化为 1.0.0
+          if [ ! -f VERSION ]; then
+            echo "1.0.0" > VERSION
+          fi
+          # 读取当前版本号
+          VERSION=$(cat VERSION)
+          # 解析版本号
+          MAJOR=$(echo $VERSION | cut -d'.' -f1)
+          MINOR=$(echo $VERSION | cut -d'.' -f2)
+          PATCH=$(echo $VERSION | cut -d'.' -f3)
+          # 递增补丁版本
+          PATCH=$((PATCH + 1))
+          # 更新版本号
+          echo "$MAJOR.$MINOR.$PATCH" > VERSION
+          echo "version=$MAJOR.$MINOR.$PATCH" >> $GITHUB_OUTPUT
+
+      - name: Create Tag
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION
+          git commit -m "Bump version to ${{ steps.version.outputs.version }}"
+          git tag -a v${{ steps.version.outputs.version }} -m "Release v${{ steps.version.outputs.version }}"
+          git push origin v${{ steps.version.outputs.version }}
+
+      - name: Create ZIP Archive
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: 'zip'
+          filename: 'dingtalk_notify.zip'  # 修改为你的文件名
+          path: 'custom_components'       # 替换为你要打包的目录
+          exclusions: '*.git* /*node_modules/*'
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}  # 使用生成的版本号作为标签名称
+          name: v${{ steps.version.outputs.version }}
+          files: dingtalk_notify.zip
+          token: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token

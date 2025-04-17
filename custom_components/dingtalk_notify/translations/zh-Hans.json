@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "钉钉机器人配置",
+        "description": "请输入钉钉机器人的Token和Secret",
+        "data": {
+          "token": "Token",
+          "secret": "Secret (可选)"
+        }
+      }
+    },
+    "error": {
+      "invalid_token": "无效的Token",
+      "unknown": "未知错误"
+    },
+    "abort": {
+      "already_configured": "此配置已存在"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "配置选项",
+        "data": {
+          "token": "Token",
+          "secret": "Secret (可选)"
+        }
+      }
+    }
+  },
+  "title": "钉钉消息机器人"
+}
