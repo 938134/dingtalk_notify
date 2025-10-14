@@ -1,33 +1,30 @@
 {
+  "entity": {
+    "text": { "name": "文本消息" },
+    "markdown": { "name": "Markdown 消息" },
+    "link": { "name": "链接消息" },
+    "actionCard": { "name": "互动卡片" }
+  },
   "config": {
     "step": {
       "user": {
-        "title": "钉钉机器人配置",
-        "description": "请输入钉钉机器人的Token和Secret",
-        "data": {
-          "token": "Token",
-          "secret": "Secret (可选)"
-        }
+        "title": "添加钉钉机器人",
+        "description": "填写 Webhook 的 access_token 和可选的加签密钥。"
       }
     },
     "error": {
-      "invalid_token": "无效的Token",
-      "unknown": "未知错误"
+      "invalid_token": "访问令牌不能为空。"
     },
     "abort": {
-      "already_configured": "此配置已存在"
+      "already_configured": "该机器人已配置。"
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "配置选项",
-        "data": {
-          "token": "Token",
-          "secret": "Secret (可选)"
-        }
+        "title": "机器人选项",
+        "description": "如果令牌或密钥已轮换，可在此更新。"
       }
     }
-  },
-  "title": "钉钉消息机器人"
+  }
 }

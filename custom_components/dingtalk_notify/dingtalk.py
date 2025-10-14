@@ -1,54 +1,43 @@
+"""DingTalk network client."""
+from __future__ import annotations
 import logging
 import aiohttp
-import json
 import hmac
 import hashlib
 import base64
 import time
 import urllib.parse
+from tenacity import retry, stop_after_attempt, wait_exponential
+from .const import DEFAULT_TIMEOUT, RETRY_TIMES
 
 _LOGGER = logging.getLogger(__name__)
 
-class DingTalkNotify:
-    """Class for interacting with DingTalk Notify API."""
+class DingTalkClient:
+    """DingTalk robot client."""
 
-    def __init__(self, token, secret=None):
-        """Initialize the DingTalk Notify API."""
-        self.token = token
-        self.secret = secret
-        self.url = f"https://oapi.dingtalk.com/robot/send?access_token={self.token}"
+    def __init__(self, token: str, secret: str | None = None) -> None:
+        self._token = token
+        self._secret = secret
+        self._session = aiohttp.ClientSession()
 
-    def _get_sign(self):
-        """Get signed URL."""
-        timestamp = str(round(time.time() * 1000))
-        secret_enc = self.secret.encode('utf-8')
-        string_to_sign = f"{timestamp}\n{self.secret}"
-        string_to_sign_enc = string_to_sign.encode('utf-8')
-        hmac_code = hmac.new(secret_enc, string_to_sign_enc, digestmod=hashlib.sha256).digest()
+    def _sign(self) -> tuple[str, str]:
+        ts = str(round(time.time() * 1000))
+        if not self._secret:
+            return ts, ""
+        secret_enc = self._secret.encode()
+        string_to_sign = f"{ts}\n{self._secret}"
+        hmac_code = hmac.new(secret_enc, string_to_sign.encode(), digestmod=hashlib.sha256).digest()
         sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
-        return timestamp, sign
+        return ts, sign
 
-    async def send_message(self, **kwargs):
-        """Send a message via DingTalk Notify."""
-        # 初始化通用参数
-        headers = {"Content-Type": "application/json;charset=utf-8"}
+    @retry(stop=stop_after_attempt(RETRY_TIMES), wait=wait_exponential(multiplier=1, min=1, max=4))
+    async def send(self, payload: dict) -> None:
+        ts, sign = self._sign()
+        url = f"https://oapi.dingtalk.com/robot/send?access_token={self._token}&timestamp={ts}&sign={sign}"
+        async with self._session.post(url, json=payload, timeout=DEFAULT_TIMEOUT) as resp:
+            data = await resp.json()
+            if data.get("errcode"):
+                _LOGGER.warning("DingTalk error: %s", data)
 
-        # 消息体已经由 __init__.py 构造好，直接使用 kwargs
-        data_info = kwargs
-
-        # 生成签名并拼接 URL
-        if self.secret:
-            timestamp, sign = self._get_sign()
-            self.url = f"https://oapi.dingtalk.com/robot/send?access_token={self.token}&timestamp={timestamp}&sign={sign}"
-
-        # 发送请求
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(self.url, data=json.dumps(data_info), headers=headers) as response:
-                    response_data = await response.json()
-                    if response_data.get("errmsg") != "ok":
-                        _LOGGER.error(f"消息发送失败：{response_data}")
-        except aiohttp.ClientError as e:
-            _LOGGER.error(f"网络请求失败：{e}")
-        except json.JSONDecodeError as e:
-            _LOGGER.error(f"JSON 解析失败：{e}")
+    async def close(self) -> None:
+        await self._session.close()

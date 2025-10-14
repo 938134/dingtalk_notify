@@ -1,33 +1,30 @@
 {
+  "entity": {
+    "text": { "name": "Text Message" },
+    "markdown": { "name": "Markdown Message" },
+    "link": { "name": "Link Message" },
+    "actionCard": { "name": "Action Card" }
+  },
   "config": {
     "step": {
       "user": {
-        "title": "DingTalk Robot Configuration",
-        "description": "Please enter the Token and Secret of your DingTalk robot",
-        "data": {
-          "token": "Token",
-          "secret": "Secret (optional)"
-        }
+        "title": "Add DingTalk Robot",
+        "description": "Enter webhook access_token and optional secret."
       }
     },
     "error": {
-      "invalid_token": "Invalid Token",
-      "unknown": "Unknown error"
+      "invalid_token": "Access token cannot be empty."
     },
     "abort": {
-      "already_configured": "This configuration already exists"
+      "already_configured": "Robot already configured."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Configuration Options",
-        "data": {
-          "token": "Token",
-          "secret": "Secret (optional)"
-        }
+        "title": "Robot Options",
+        "description": "Update access_token or secret if rotated."
       }
     }
-  },
-  "title": "DingTalk Notify"
+  }
 }

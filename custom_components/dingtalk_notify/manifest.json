@@ -1,14 +1,14 @@
 {
   "domain": "dingtalk_notify",
   "name": "钉钉消息机器人",
-  "codeowners": ["@938134@qq.com"],
+  "codeowners": ["@938134"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/938134/dingtalk_notify",
   "iot_class": "cloud_push",
   "issue_tracker": "https://github.com/938134/dingtalk_notify/issues",
-  "loggers": [ "dingtalk notify"],
+  "loggers": ["dingtalk_notify"],
   "requirements": ["aiohttp>=3.7.4"],
-  "version": "1.0.0",
-  "zeroconf": ["_mass._tcp.local."]
+  "version": "3.1.0",
+  "platforms": ["notify"]
 }
