@@ -1,29 +1,144 @@
 {
-  "entity": {
-    "text": { "name": "Text Message" },
-    "markdown": { "name": "Markdown Message" },
-    "link": { "name": "Link Message" },
-    "actionCard": { "name": "Action Card" }
-  },
   "config": {
     "step": {
       "user": {
-        "title": "Add DingTalk Robot",
-        "description": "Enter webhook access_token and optional secret."
+        "title": "Add DingTalk robot",
+        "description": "Paste the access token of the custom robot, or the complete webhook URL from the DingTalk console. A webhook with a signing secret enabled also needs that secret.",
+        "data": {
+          "token": "Access token or webhook URL",
+          "secret": "Signing secret"
+        },
+        "data_description": {
+          "token": "The `access_token` parameter of the robot webhook.",
+          "secret": "The `SEC...` value from the security settings, only when \"Sign\" is enabled."
+        }
+      },
+      "reconfigure": {
+        "title": "Update DingTalk robot",
+        "description": "Update the credentials of **{name}**.",
+        "data": {
+          "token": "Access token or webhook URL",
+          "secret": "Signing secret"
+        },
+        "data_description": {
+          "token": "The `access_token` parameter of the robot webhook.",
+          "secret": "The `SEC...` value from the security settings, only when \"Sign\" is enabled."
+        }
       }
     },
     "error": {
-      "invalid_token": "Access token cannot be empty."
+      "invalid_token": "No access token found. Paste the token itself or the complete webhook URL.",
+      "invalid_secret": "The signing secret cannot contain spaces."
     },
     "abort": {
-      "already_configured": "Robot already configured."
+      "already_configured": "This robot is already configured.",
+      "reconfigure_successful": "The robot was updated."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Robot Options",
-        "description": "Update access_token or secret if rotated."
+        "title": "Robot options",
+        "data": {
+          "timeout": "Request timeout",
+          "retry": "Retry attempts"
+        },
+        "data_description": {
+          "timeout": "How long to wait for the DingTalk webhook, in seconds.",
+          "retry": "How often a failing request is retried. Use 0 to disable retries."
+        }
+      }
+    }
+  },
+  "entity": {
+    "notify": {
+      "text": {
+        "name": "Text message"
+      },
+      "markdown": {
+        "name": "Markdown message"
+      },
+      "link": {
+        "name": "Link message"
+      },
+      "action_card": {
+        "name": "Action card"
+      }
+    }
+  },
+  "selector": {
+    "button_layout": {
+      "options": {
+        "0": "Vertical",
+        "1": "Horizontal"
+      }
+    }
+  },
+  "exceptions": {
+    "cannot_connect": {
+      "message": "Unable to reach the DingTalk webhook: {error}"
+    },
+    "http_error": {
+      "message": "The DingTalk webhook returned HTTP {status}."
+    },
+    "api_error": {
+      "message": "DingTalk rejected the message ({code}): {message}"
+    },
+    "unexpected_response": {
+      "message": "The DingTalk webhook returned an unexpected response."
+    },
+    "link_url_required": {
+      "message": "A DingTalk link message requires a message URL."
+    },
+    "card_action_required": {
+      "message": "A DingTalk action card requires buttons, or a single button."
+    }
+  },
+  "services": {
+    "send_message": {
+      "name": "Send message",
+      "description": "Send a message to a DingTalk robot, including the options that the generic `notify.send_message` action cannot carry.",
+      "fields": {
+        "message": {
+          "name": "Message",
+          "description": "The message body. Markdown is supported by the markdown and action card message types."
+        },
+        "title": {
+          "name": "Title",
+          "description": "Message title. Markdown messages get it as a `## ` heading at the top of the body and as the notification preview; link and action card messages use it as the notification preview; text messages get it as the first line of the body."
+        },
+        "at_all": {
+          "name": "Mention everyone",
+          "description": "Mention every member of the group. Only used by text and markdown messages."
+        },
+        "at_mobiles": {
+          "name": "Mention phone numbers",
+          "description": "Phone numbers to mention. Only used by text and markdown messages."
+        },
+        "pic_url": {
+          "name": "Picture URL",
+          "description": "Thumbnail of a link message, or the cover image of an action card."
+        },
+        "message_url": {
+          "name": "Message URL",
+          "description": "Target URL of a link message. Required for the link message type."
+        },
+        "buttons": {
+          "name": "Buttons",
+          "description": "Buttons of an action card, each with a `title` and a `url`."
+        },
+        "button_layout": {
+          "name": "Button layout",
+          "description": "How the buttons of an action card are laid out."
+        },
+        "single_title": {
+          "name": "Single button title",
+          "description": "Title of the single button of an action card, used together with the single button URL."
+        },
+        "single_url": {
+          "name": "Single button URL",
+          "description": "URL of the single button of an action card, used together with the single button title."
+        }
       }
     }
   }

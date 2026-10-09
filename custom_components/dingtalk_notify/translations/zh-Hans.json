@@ -1,29 +1,144 @@
 {
-  "entity": {
-    "text": { "name": "文本消息" },
-    "markdown": { "name": "Markdown 消息" },
-    "link": { "name": "链接消息" },
-    "actionCard": { "name": "互动卡片" }
-  },
   "config": {
     "step": {
       "user": {
         "title": "添加钉钉机器人",
-        "description": "填写 Webhook 的 access_token 和可选的加签密钥。"
+        "description": "粘贴自定义机器人的 access_token，也可以直接粘贴钉钉后台给出的完整 Webhook 地址。如果机器人开启了「加签」，还需要填写加签密钥。",
+        "data": {
+          "token": "Access Token 或 Webhook 地址",
+          "secret": "加签密钥"
+        },
+        "data_description": {
+          "token": "Webhook 中的 `access_token` 参数。",
+          "secret": "安全设置中「加签」的 `SEC...` 开头字符串，仅在开启加签时需要。"
+        }
+      },
+      "reconfigure": {
+        "title": "更新钉钉机器人",
+        "description": "更新 **{name}** 的凭据。",
+        "data": {
+          "token": "Access Token 或 Webhook 地址",
+          "secret": "加签密钥"
+        },
+        "data_description": {
+          "token": "Webhook 中的 `access_token` 参数。",
+          "secret": "安全设置中「加签」的 `SEC...` 开头字符串，仅在开启加签时需要。"
+        }
       }
     },
     "error": {
-      "invalid_token": "访问令牌不能为空。"
+      "invalid_token": "没有找到 access_token，请粘贴 Token 本身或完整的 Webhook 地址。",
+      "invalid_secret": "加签密钥中不能包含空格。"
     },
     "abort": {
-      "already_configured": "该机器人已配置。"
+      "already_configured": "该机器人已经配置过了。",
+      "reconfigure_successful": "机器人已更新。"
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "机器人选项",
-        "description": "如果令牌或密钥已轮换，可在此更新。"
+        "data": {
+          "timeout": "请求超时时间",
+          "retry": "失败重试次数"
+        },
+        "data_description": {
+          "timeout": "等待钉钉 Webhook 响应的最长时间，单位秒。",
+          "retry": "请求失败后的重试次数，填 0 表示不重试。"
+        }
+      }
+    }
+  },
+  "entity": {
+    "notify": {
+      "text": {
+        "name": "文本消息"
+      },
+      "markdown": {
+        "name": "Markdown 消息"
+      },
+      "link": {
+        "name": "链接消息"
+      },
+      "action_card": {
+        "name": "互动卡片"
+      }
+    }
+  },
+  "selector": {
+    "button_layout": {
+      "options": {
+        "0": "纵向",
+        "1": "横向"
+      }
+    }
+  },
+  "exceptions": {
+    "cannot_connect": {
+      "message": "无法连接钉钉 Webhook：{error}"
+    },
+    "http_error": {
+      "message": "钉钉 Webhook 返回 HTTP {status}。"
+    },
+    "api_error": {
+      "message": "钉钉拒绝了该消息（{code}）：{message}"
+    },
+    "unexpected_response": {
+      "message": "钉钉 Webhook 返回了异常的响应内容。"
+    },
+    "link_url_required": {
+      "message": "钉钉链接消息必须提供 message_url。"
+    },
+    "card_action_required": {
+      "message": "钉钉互动卡片必须提供 buttons，或同时提供 single_title 与 single_url。"
+    }
+  },
+  "services": {
+    "send_message": {
+      "name": "发送消息",
+      "description": "向钉钉机器人发送消息，并支持通用 `notify.send_message` 动作无法携带的参数。",
+      "fields": {
+        "message": {
+          "name": "消息内容",
+          "description": "消息正文。Markdown 消息与互动卡片支持 Markdown 语法。"
+        },
+        "title": {
+          "name": "标题",
+          "description": "消息标题。Markdown 消息会以 `## 标题` 作为正文首行，同时作为通知栏标题；链接与互动卡片用作通知栏标题；文本消息作为正文首行。"
+        },
+        "at_all": {
+          "name": "@所有人",
+          "description": "是否 @ 群内所有成员。仅文本与 Markdown 消息有效。"
+        },
+        "at_mobiles": {
+          "name": "@手机号",
+          "description": "需要 @ 的手机号列表。仅文本与 Markdown 消息有效。"
+        },
+        "pic_url": {
+          "name": "图片地址",
+          "description": "链接消息的缩略图，或互动卡片的封面图。"
+        },
+        "message_url": {
+          "name": "跳转地址",
+          "description": "链接消息的跳转地址，链接消息必填。"
+        },
+        "buttons": {
+          "name": "按钮",
+          "description": "互动卡片的按钮列表，每项包含 `title` 与 `url`。"
+        },
+        "button_layout": {
+          "name": "按钮排列",
+          "description": "互动卡片按钮的排列方式。"
+        },
+        "single_title": {
+          "name": "单按钮标题",
+          "description": "互动卡片单一按钮的标题，需与单按钮地址同时使用。"
+        },
+        "single_url": {
+          "name": "单按钮地址",
+          "description": "互动卡片单一按钮的跳转地址，需与单按钮标题同时使用。"
+        }
       }
     }
   }

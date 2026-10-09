@@ -3,12 +3,10 @@
   "name": "钉钉消息机器人",
   "codeowners": ["@938134"],
   "config_flow": true,
-  "dependencies": [],
   "documentation": "https://github.com/938134/dingtalk_notify",
+  "integration_type": "service",
   "iot_class": "cloud_push",
   "issue_tracker": "https://github.com/938134/dingtalk_notify/issues",
-  "loggers": ["dingtalk_notify"],
-  "requirements": ["aiohttp>=3.7.4"],
-  "version": "1.1.0",
-  "platforms": ["notify"]
+  "loggers": ["custom_components.dingtalk_notify"],
+  "version": "2.0.0"
 }
