@@ -2,15 +2,34 @@
 
 This module must stay free of Home Assistant imports so every other module can
 import from it without creating circular dependencies.
+
+`NAME` and `VERSION` are loaded from `manifest.json` (same directory) at import
+time. Bump the version in one place — manifest.json — and every module that
+imports them picks up the new value automatically.
 """
 
 from __future__ import annotations
 
+import json
 from enum import StrEnum
+from pathlib import Path
 from typing import Final
 from urllib.parse import parse_qs, urlparse
 
 DOMAIN: Final = "dingtalk_notify"
+
+# --------------------------------------------------------------------------- #
+# Name & version (single source of truth = manifest.json)
+# --------------------------------------------------------------------------- #
+try:
+    _manifest_path = Path(__file__).parent / "manifest.json"
+    with _manifest_path.open("r", encoding="utf-8") as _f:
+        _manifest = json.load(_f)
+    NAME: Final = _manifest.get("name") or "钉钉消息机器人"
+    VERSION: Final = _manifest.get("version") or "0.0.0"
+except Exception:  # pragma: no cover - defensive: manifest must always exist
+    NAME = "钉钉消息机器人"
+    VERSION = "0.0.0"
 
 # --------------------------------------------------------------------------- #
 # Config entry

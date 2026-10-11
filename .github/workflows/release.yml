@@ -15,33 +15,45 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # ---------- 读取 manifest.json 版本号 ----------
+      - name: Get version from manifest
+        id: version
+        run: |
+          export TZ=Asia/Shanghai
+          VERSION=$(python3 -c "import json; print(json.load(open('custom_components/dingtalk_notify/manifest.json'))['version'])")
+          TAG="v${VERSION}"
+          BUILD_DATE=$(date +%Y-%m-%d)
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "build_date=${BUILD_DATE}" >> $GITHUB_OUTPUT
+          echo "📌 manifest.json 版本: ${VERSION} → 标签: ${TAG}"
+
+      # ---------- CI 校验：const.py 是否从 manifest 读取 ----------
+      - name: Verify const.py reads from manifest
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          manifest = json.load(open('custom_components/dingtalk_notify/manifest.json'))
+          src = open('custom_components/dingtalk_notify/const.py', encoding='utf-8').read()
+          if 'manifest.json' not in src:
+              print('❌ const.py 未检测到 manifest.json 读取逻辑')
+              sys.exit(1)
+          if '.get("version"' not in src and '.get("name"' not in src:
+              print('⚠️  const.py 未检测到 .get("version") 或 .get("name") 调用')
+              sys.exit(1)
+          print(f'✅ manifest.json version={manifest["version"]}, const.py 已从 manifest 读取')
+          PY
+
       # ---------- 强制同步远程标签 ----------
       - name: Fetch & prune tags
         run: |
           git fetch --tags --force
-          echo "Existing today tags:"
-          git tag -l "v$(date +%Y%m%d)*" | sort -V || true
-
-      # ---------- 计算下一个版本号 ----------
-      - name: Get next version
-        id: version
-        run: |
-          export TZ=Asia/Shanghai
-          DATE=$(date +%Y%m%d)
-
-          # 当天已发布最大序号
-          MAX_NUM=$(git tag -l "v${DATE}*" | grep -oE '[0-9]{2}$' | sort -nr | head -1)
-          MAX_NUM=${MAX_NUM:-0}
-          NEXT_NUM=$((10#$MAX_NUM + 1))
-          NEW_VERSION="v${DATE}$(printf '%02d' $NEXT_NUM)"
-
-          echo "New version: $NEW_VERSION"
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       # ---------- 可选：删除同名 Release（反复推送时） ----------
       - name: Delete existing release if any
         continue-on-error: true
-        run: gh release delete "${{ steps.version.outputs.version }}" --cleanup-tag -y
+        run: gh release delete "${{ steps.version.outputs.tag }}" --cleanup-tag -y
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -51,17 +63,22 @@ jobs:
           zip -r dingtalk_notify.zip custom_components/dingtalk_notify \
             -x "*/__pycache__/*" "*/.git*" "*.pyc"
 
+      # ---------- 渲染发布描述模板 ----------
+      - name: Render release body
+        run: |
+          sed -e "s|{{VERSION}}|${{ steps.version.outputs.version }}|g" \
+              -e "s|{{BUILD_DATE}}|${{ steps.version.outputs.build_date }}|g" \
+              .github/release_body.md > /tmp/release_body.md
+          cat /tmp/release_body.md
+
       # ---------- 生成 Release ----------
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
           artifacts: "dingtalk_notify.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.version.outputs.version }}
-          name: Release ${{ steps.version.outputs.version }}
-          body: |
-            Auto-generated on push.
-            - 集成版本见 `manifest.json`
-            - 下载下方 ZIP 后通过 HACS 安装
+          tag: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          body-file: /tmp/release_body.md
           makeLatest: true
           skipIfReleaseExists: true
